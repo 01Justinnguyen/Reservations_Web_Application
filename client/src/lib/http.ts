@@ -1,7 +1,7 @@
 import { getAccessTokenFromLocalStorage, normalizePath, removeTokensFromLocalStorage, setAccessTokenToLocalStorage, setRefreshTokenToLocalStorage } from '@/lib/utils'
 import { LoginResType } from '@/schemaValidations/auth.schema'
 import { redirect } from 'next/navigation'
-import envConfig from '../../config'
+import envConfig from '../config'
 
 type CustomOptions = Omit<RequestInit, 'method'> & {
   baseUrl?: string | undefined
