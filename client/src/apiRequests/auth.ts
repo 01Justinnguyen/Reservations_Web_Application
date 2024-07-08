@@ -25,7 +25,7 @@ const authApiRequest = {
       }
     ),
   logout: () =>
-    http.post('/api/auth/logout', null, {
+    http.post<MessageResType>('/api/auth/logout', null, {
       baseUrl: ''
     })
 }
