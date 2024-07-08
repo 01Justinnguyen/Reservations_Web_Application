@@ -30,7 +30,7 @@ export default function LoginForm() {
       toast({
         description: result.payload.message
       })
-      router.push('/')
+      router.push('/manage/dashboard')
     } catch (error: any) {
       handleErrorApi({
         error,
