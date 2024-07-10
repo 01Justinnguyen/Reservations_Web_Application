@@ -9,31 +9,40 @@ import { UpdateMeBody, UpdateMeBodyType } from '@/schemaValidations/account.sche
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Form, FormField, FormItem, FormMessage } from '@/components/ui/form'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { ChangeEvent, useMemo, useRef, useState } from 'react'
-import { useAccountProfile } from '@/queries/useAcccount'
+import { ChangeEvent, useEffect, useMemo, useRef, useState } from 'react'
+import { useAccountMe, useUpdateMeMutation } from '@/queries/useAcccount'
+import { handleErrorApi } from '@/lib/utils'
+import { useUploadMediaMutation } from '@/queries/useMedia'
+import { toast } from '@/components/ui/use-toast'
 
 export default function UpdateProfileForm() {
   const [file, setFile] = useState<File | null>(null)
   const avatarInputRef = useRef<HTMLInputElement>(null)
-  useAccountProfile((data) => {
-    console.log('from update profile', data)
-    const { name, avatar } = data.data
-    form.reset({
-      name,
-      avatar: avatar ?? ''
-    })
-  }, 'update-profile')
+  const updateMeMutation = useUpdateMeMutation()
+  const uploadImageMutaion = useUploadMediaMutation()
   const form = useForm<UpdateMeBodyType>({
     resolver: zodResolver(UpdateMeBody),
     defaultValues: {
       name: '',
-      avatar: ''
+      avatar: undefined
     }
   })
-
   const avatar = form.watch('avatar')
   const name = form.watch('name')
+  const { data, refetch } = useAccountMe()
+
+  useEffect(() => {
+    if (data) {
+      const { name, avatar } = data.payload.data
+      form.reset({
+        name,
+        avatar: avatar ?? undefined
+      })
+    }
+  }, [form, data])
+
   // Nếu mình dùng Next.js 15 (tức React 19) thì không cần dùng useMemo
+  // const previewAvatar = file ? URL.createObjectURL(file) : avatar
   // Còn nếu dùng Next.js 14 trở về trước thì phải dùng để không bị tính toán lại
   const previewAvatar = useMemo(() => {
     if (file) {
@@ -42,9 +51,50 @@ export default function UpdateProfileForm() {
     return avatar
   }, [avatar, file])
 
+  const reset = () => {
+    form.reset()
+    setFile(null)
+  }
+
+  const onSubmit = async (values: UpdateMeBodyType) => {
+    if (updateMeMutation.isPending) return
+    try {
+      let body = values
+      if (file) {
+        const formData = new FormData()
+        formData.append('file', file)
+        const uploadImageResult = await uploadImageMutaion.mutateAsync(formData)
+        const imageUrl = uploadImageResult.payload.data
+        body = {
+          ...values,
+          avatar: imageUrl
+        }
+      }
+      const result = await updateMeMutation.mutateAsync(body)
+      toast({
+        title: 'Thành Công 😊😊😊',
+        description: result.payload.message,
+        variant: 'default',
+        duration: 4000
+      })
+      refetch()
+    } catch (error: any) {
+      handleErrorApi({
+        error,
+        setError: form.setError
+      })
+    }
+  }
+
   return (
     <Form {...form}>
-      <form noValidate className="grid auto-rows-max items-start gap-4 md:gap-8">
+      <form
+        noValidate
+        className="grid auto-rows-max items-start gap-4 md:gap-8"
+        onReset={reset}
+        onSubmit={form.handleSubmit(onSubmit, (e) => {
+          console.log(e)
+        })}>
         <Card x-chunk="dashboard-07-chunk-0">
           <CardHeader>
             <CardTitle>Thông tin cá nhân</CardTitle>
@@ -70,6 +120,7 @@ export default function UpdateProfileForm() {
                           const file = e.target.files?.[0]
                           if (file) {
                             setFile(file)
+                            field.onChange('http://localhost:3000/' + field.name)
                           }
                         }}
                       />
