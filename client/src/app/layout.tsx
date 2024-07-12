@@ -2,11 +2,9 @@ import type { Metadata } from 'next'
 import { Inter as FontSans } from 'next/font/google'
 import './globals.css'
 import { cn } from '@/lib/utils'
-import envConfig from '../config'
 import { ThemeProvider } from '@/components/theme-provider'
 import { Toaster } from '@/components/ui/toaster'
 import AppProvider from '@/components/app-provider'
-console.log(envConfig)
 
 const fontSans = FontSans({
   subsets: ['latin'],
