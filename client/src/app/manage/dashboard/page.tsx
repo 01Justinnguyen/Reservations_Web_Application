@@ -11,6 +11,7 @@ export default async function Dashboard() {
     name = result.payload.data.name
   } catch (error: any) {
     if (error.digest?.includes('NEXT_REDIRECT')) {
+      console.log('Lỗi ở đây nè hiểu không')
       throw error
     }
   }
