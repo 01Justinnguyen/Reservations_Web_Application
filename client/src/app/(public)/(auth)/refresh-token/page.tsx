@@ -16,6 +16,8 @@ export default function RefreshTokenPage() {
           router.push(redirectPathName || '')
         }
       })
+    } else {
+      router.push('/')
     }
   }, [router, refreshTokenFromUrl, redirectPathName])
   return <div>Refresh token...</div>
