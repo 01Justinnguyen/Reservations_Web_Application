@@ -12,7 +12,9 @@ export function middleware(request: NextRequest) {
 
   // Muốn truy cập vào các route private nhưng chưa đăng nhập thì đá về login
   if (privatePaths.some((path) => pathname.startsWith(path) && !refreshToken)) {
-    return NextResponse.redirect(new URL('/login', request.url))
+    const url = new URL('/login', request.url)
+    url.searchParams.set('clearTokens', 'true')
+    return NextResponse.redirect(url)
   }
 
   // Đăng nhập rồi mà muốn về trang login thì đá về trang chủ
