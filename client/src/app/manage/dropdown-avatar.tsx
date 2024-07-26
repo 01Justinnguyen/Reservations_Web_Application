@@ -8,10 +8,12 @@ import { handleErrorApi } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
 import { toast } from '@/components/ui/use-toast'
 import { useAccountMe } from '@/queries/useAcccount'
+import { useAppContext } from '@/components/app-provider'
 
 export default function DropdownAvatar() {
   const router = useRouter()
   const logoutMutatation = useLogoutMutation()
+  const { setIsAuth } = useAppContext()
   const { data } = useAccountMe()
   const account = data?.payload.data
 
@@ -19,6 +21,7 @@ export default function DropdownAvatar() {
     if (logoutMutatation.isPending) return
     try {
       const result = await logoutMutatation.mutateAsync()
+      setIsAuth(false)
       router.push('/')
       toast({
         title: 'Okela',
