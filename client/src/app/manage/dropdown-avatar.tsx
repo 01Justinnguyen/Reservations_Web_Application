@@ -7,7 +7,7 @@ import { useLogoutMutation } from '@/queries/useAuth'
 import { handleErrorApi } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
 import { toast } from '@/components/ui/use-toast'
-import { useAccountMe } from '@/queries/useAcccount'
+import { useAccountMe } from '@/queries/useAccount'
 import { useAppContext } from '@/components/app-provider'
 
 export default function DropdownAvatar() {
