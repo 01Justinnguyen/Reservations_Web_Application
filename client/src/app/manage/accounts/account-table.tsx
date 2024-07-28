@@ -46,7 +46,14 @@ const AccountTableContext = createContext<{
 export const columns: ColumnDef<AccountType>[] = [
   {
     accessorKey: 'id',
-    header: 'ID'
+    header: ({ column }) => {
+      return (
+        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
+          ID
+          <CaretSortIcon className="ml-2 h-4 w-4" />
+        </Button>
+      )
+    }
   },
   {
     accessorKey: 'avatar',
@@ -144,7 +151,6 @@ export default function AccountTable() {
   const [employeeDelete, setEmployeeDelete] = useState<AccountItem | null>(null)
   const accountListQuery = useGetAccountList()
   const data = accountListQuery.data?.payload.data ?? []
-  console.log('🐻 ~ AccountTable ~ data:', data)
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
