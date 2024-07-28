@@ -1,6 +1,6 @@
 import accountApiRequest from '@/apiRequests/account'
-import { AccountResType, CreateEmployeeAccountBodyType, UpdateEmployeeAccountBodyType } from '@/schemaValidations/account.schema'
-import { QueryClient, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { AccountResType, UpdateEmployeeAccountBodyType } from '@/schemaValidations/account.schema'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 export const useAccountMe = (onSuccess?: (data: AccountResType) => void, key?: string) => {
   return useQuery({
