@@ -25,10 +25,10 @@ export const useChangePasswordMeMutation = () => {
   })
 }
 
-export const useGetAccountList = (key?: string) => {
+export const useGetAccountList = () => {
   return useQuery({
-    queryKey: ['accounts', key],
-    queryFn: () => accountApiRequest.list
+    queryKey: ['accounts'],
+    queryFn: accountApiRequest.list
   })
 }
 
