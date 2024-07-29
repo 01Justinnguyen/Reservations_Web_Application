@@ -60,6 +60,11 @@ export default function EditEmployee({ id, setId, onSubmitSuccess }: { id?: numb
     }
   }, [data, form])
 
+  const reset = () => {
+    setId(undefined)
+    setFile(null)
+  }
+
   const onSubmit = async (values: UpdateEmployeeAccountBodyType) => {
     if (updateAccountMutation.isPending) return
     try {
@@ -84,8 +89,8 @@ export default function EditEmployee({ id, setId, onSubmitSuccess }: { id?: numb
         variant: 'default',
         duration: 4000
       })
+      reset()
       onSubmitSuccess && onSubmitSuccess()
-      setId(undefined)
     } catch (error: any) {
       handleErrorApi({
         error,
@@ -99,7 +104,7 @@ export default function EditEmployee({ id, setId, onSubmitSuccess }: { id?: numb
       open={Boolean(id)}
       onOpenChange={(value) => {
         if (!value) {
-          setId(undefined)
+          reset()
         }
       }}>
       <DialogContent className="sm:max-w-[600px] max-h-screen overflow-auto">
