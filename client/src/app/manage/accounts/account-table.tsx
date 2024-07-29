@@ -27,7 +27,9 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { useSearchParams } from 'next/navigation'
 import AutoPagination from '@/components/auto-pagination'
-import { useGetAccountList } from '@/queries/useAccount'
+import { useDeleteAccountMutation, useGetAccountList } from '@/queries/useAccount'
+import { toast } from '@/components/ui/use-toast'
+import { handleErrorApi } from '@/lib/utils'
 
 type AccountItem = AccountListResType['data'][0]
 
@@ -117,6 +119,26 @@ export const columns: ColumnDef<AccountType>[] = [
 ]
 
 function AlertDialogDeleteAccount({ employeeDelete, setEmployeeDelete }: { employeeDelete: AccountItem | null; setEmployeeDelete: (value: AccountItem | null) => void }) {
+  const deleteAccountMutation = useDeleteAccountMutation()
+
+  const deleteAccount = async () => {
+    if (employeeDelete) {
+      try {
+        const result = await deleteAccountMutation.mutateAsync(employeeDelete.id)
+        setEmployeeDelete(null)
+        toast({
+          title: 'Thành Công 😊😊😊',
+          description: result.payload.message,
+          variant: 'default',
+          duration: 4000
+        })
+      } catch (error) {
+        handleErrorApi({
+          error
+        })
+      }
+    }
+  }
   return (
     <AlertDialog
       open={Boolean(employeeDelete)}
@@ -134,7 +156,7 @@ function AlertDialogDeleteAccount({ employeeDelete, setEmployeeDelete }: { emplo
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction>Continue</AlertDialogAction>
+          <AlertDialogAction onClick={deleteAccount}>Continue</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
