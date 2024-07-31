@@ -15,34 +15,19 @@ import {
 } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
 
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger
-} from '@/components/ui/dropdown-menu'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { createContext, useContext, useEffect, useState } from 'react'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle
-} from '@/components/ui/alert-dialog'
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { formatCurrency, getVietnameseDishStatus } from '@/lib/utils'
 import { useSearchParams } from 'next/navigation'
 import AutoPagination from '@/components/auto-pagination'
 import { DishListResType } from '@/schemaValidations/dish.schema'
 import EditDish from '@/app/manage/dishes/edit-dish'
 import AddDish from '@/app/manage/dishes/add-dish'
+import { useDishList } from '@/queries/useDish'
 
 type DishItem = DishListResType['data'][0]
 
@@ -68,9 +53,9 @@ export const columns: ColumnDef<DishItem>[] = [
     header: 'Ảnh',
     cell: ({ row }) => (
       <div>
-        <Avatar className='aspect-square w-[100px] h-[100px] rounded-md object-cover'>
+        <Avatar className="aspect-square w-[100px] h-[100px] rounded-md object-cover">
           <AvatarImage src={row.getValue('image')} />
-          <AvatarFallback className='rounded-none'>{row.original.name}</AvatarFallback>
+          <AvatarFallback className="rounded-none">{row.original.name}</AvatarFallback>
         </Avatar>
       </div>
     )
@@ -78,19 +63,17 @@ export const columns: ColumnDef<DishItem>[] = [
   {
     accessorKey: 'name',
     header: 'Tên',
-    cell: ({ row }) => <div className='capitalize'>{row.getValue('name')}</div>
+    cell: ({ row }) => <div className="capitalize">{row.getValue('name')}</div>
   },
   {
     accessorKey: 'price',
     header: 'Giá cả',
-    cell: ({ row }) => <div className='capitalize'>{formatCurrency(row.getValue('price'))}</div>
+    cell: ({ row }) => <div className="capitalize">{formatCurrency(row.getValue('price'))}</div>
   },
   {
     accessorKey: 'description',
     header: 'Mô tả',
-    cell: ({ row }) => (
-      <div dangerouslySetInnerHTML={{ __html: row.getValue('description') }} className='whitespace-pre-line' />
-    )
+    cell: ({ row }) => <div dangerouslySetInnerHTML={{ __html: row.getValue('description') }} className="whitespace-pre-line" />
   },
   {
     accessorKey: 'status',
@@ -112,12 +95,12 @@ export const columns: ColumnDef<DishItem>[] = [
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant='ghost' className='h-8 w-8 p-0'>
-              <span className='sr-only'>Open menu</span>
-              <DotsHorizontalIcon className='h-4 w-4' />
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <span className="sr-only">Open menu</span>
+              <DotsHorizontalIcon className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align='end'>
+          <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={openEditDish}>Sửa</DropdownMenuItem>
@@ -129,13 +112,7 @@ export const columns: ColumnDef<DishItem>[] = [
   }
 ]
 
-function AlertDialogDeleteDish({
-  dishDelete,
-  setDishDelete
-}: {
-  dishDelete: DishItem | null
-  setDishDelete: (value: DishItem | null) => void
-}) {
+function AlertDialogDeleteDish({ dishDelete, setDishDelete }: { dishDelete: DishItem | null; setDishDelete: (value: DishItem | null) => void }) {
   return (
     <AlertDialog
       open={Boolean(dishDelete)}
@@ -143,14 +120,12 @@ function AlertDialogDeleteDish({
         if (!value) {
           setDishDelete(null)
         }
-      }}
-    >
+      }}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Xóa món ăn?</AlertDialogTitle>
           <AlertDialogDescription>
-            Món <span className='bg-foreground text-primary-foreground rounded px-1'>{dishDelete?.name}</span> sẽ bị xóa
-            vĩnh viễn
+            Món <span className="bg-foreground text-primary-foreground rounded px-1">{dishDelete?.name}</span> sẽ bị xóa vĩnh viễn
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
@@ -169,7 +144,8 @@ export default function DishTable() {
   const pageIndex = page - 1
   const [dishIdEdit, setDishIdEdit] = useState<number | undefined>()
   const [dishDelete, setDishDelete] = useState<DishItem | null>(null)
-  const data: any[] = []
+  const dishLishQuery = useDishList()
+  const data = dishLishQuery.data?.payload.data ?? []
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
@@ -210,31 +186,27 @@ export default function DishTable() {
 
   return (
     <DishTableContext.Provider value={{ dishIdEdit, setDishIdEdit, dishDelete, setDishDelete }}>
-      <div className='w-full'>
+      <div className="w-full">
         <EditDish id={dishIdEdit} setId={setDishIdEdit} />
         <AlertDialogDeleteDish dishDelete={dishDelete} setDishDelete={setDishDelete} />
-        <div className='flex items-center py-4'>
+        <div className="flex items-center py-4">
           <Input
-            placeholder='Lọc tên'
+            placeholder="Lọc tên"
             value={(table.getColumn('name')?.getFilterValue() as string) ?? ''}
             onChange={(event) => table.getColumn('name')?.setFilterValue(event.target.value)}
-            className='max-w-sm'
+            className="max-w-sm"
           />
-          <div className='ml-auto flex items-center gap-2'>
+          <div className="ml-auto flex items-center gap-2">
             <AddDish />
           </div>
         </div>
-        <div className='rounded-md border'>
+        <div className="rounded-md border">
           <Table>
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>
                   {headerGroup.headers.map((header) => {
-                    return (
-                      <TableHead key={header.id}>
-                        {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                      </TableHead>
-                    )
+                    return <TableHead key={header.id}>{header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}</TableHead>
                   })}
                 </TableRow>
               ))}
@@ -250,7 +222,7 @@ export default function DishTable() {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={columns.length} className='h-24 text-center'>
+                  <TableCell colSpan={columns.length} className="h-24 text-center">
                     No results.
                   </TableCell>
                 </TableRow>
@@ -258,17 +230,12 @@ export default function DishTable() {
             </TableBody>
           </Table>
         </div>
-        <div className='flex items-center justify-end space-x-2 py-4'>
-          <div className='text-xs text-muted-foreground py-4 flex-1 '>
-            Hiển thị <strong>{table.getPaginationRowModel().rows.length}</strong> trong <strong>{data.length}</strong>{' '}
-            kết quả
+        <div className="flex items-center justify-end space-x-2 py-4">
+          <div className="text-xs text-muted-foreground py-4 flex-1 ">
+            Hiển thị <strong>{table.getPaginationRowModel().rows.length}</strong> trong <strong>{data.length}</strong> kết quả
           </div>
           <div>
-            <AutoPagination
-              page={table.getState().pagination.pageIndex + 1}
-              pageSize={table.getPageCount()}
-              pathname='/manage/dishes'
-            />
+            <AutoPagination page={table.getState().pagination.pageIndex + 1} pageSize={table.getPageCount()} pathname="/manage/dishes" />
           </div>
         </div>
       </div>
