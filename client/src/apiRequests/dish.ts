@@ -7,7 +7,7 @@ const dishApiRequest = {
   getDish: (id: number) => http.get<DishResType>(`${prefix}/${id}`),
   create: (body: CreateDishBodyType) => http.post<DishResType>(`${prefix}`, body),
   update: (id: number, body: UpdateDishBodyType) => http.put<DishResType>(`${prefix}/${id}`, body),
-  delete: (id: number) => http.delete(`${prefix}/${id}`)
+  delete: (id: number) => http.delete<DishResType>(`${prefix}/${id}`)
 }
 
 export default dishApiRequest

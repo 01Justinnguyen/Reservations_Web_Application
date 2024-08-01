@@ -32,11 +32,6 @@ export default function AddEmployee() {
     }
   })
 
-  const reset = () => {
-    form.reset()
-    setFile(null)
-  }
-
   const avatar = form.watch('avatar')
   const name = form.watch('name')
   const previewAvatarFromFile = useMemo(() => {
@@ -45,6 +40,11 @@ export default function AddEmployee() {
     }
     return avatar
   }, [file, avatar])
+
+  const reset = () => {
+    form.reset()
+    setFile(null)
+  }
 
   const onSubmit = async (values: CreateEmployeeAccountBodyType) => {
     if (addAccountMutation.isPending) return
@@ -78,7 +78,12 @@ export default function AddEmployee() {
   }
 
   return (
-    <Dialog onOpenChange={setOpen} open={open}>
+    <Dialog
+      onOpenChange={(value) => {
+        setOpen(value)
+        reset()
+      }}
+      open={open}>
       <DialogTrigger asChild>
         <Button size="sm" className="h-7 gap-1">
           <PlusCircle className="h-3.5 w-3.5" />
@@ -91,9 +96,14 @@ export default function AddEmployee() {
           <DialogDescription>Các trường tên, email, mật khẩu là bắt buộc</DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form noValidate className="grid auto-rows-max items-start gap-4 md:gap-8" id="add-employee-form" onSubmit={form.handleSubmit(onSubmit, (e) => {
-            console.log(e);
-          })} onReset={reset}>
+          <form
+            noValidate
+            className="grid auto-rows-max items-start gap-4 md:gap-8"
+            id="add-employee-form"
+            onSubmit={form.handleSubmit(onSubmit, (e) => {
+              console.log(e)
+            })}
+            onReset={reset}>
             <div className="grid gap-4 py-4">
               <FormField
                 control={form.control}
