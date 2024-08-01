@@ -15,6 +15,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { UpdateDishBody, UpdateDishBodyType } from '@/schemaValidations/dish.schema'
 import { DishStatus, DishStatusValues } from '@/constants/type'
 import { Textarea } from '@/components/ui/textarea'
+import { useUploadMediaMutation } from '@/queries/useMedia'
+import { useGetDish, useUpdateDishMutation } from '@/queries/useDish'
 
 export default function EditDish({ id, setId, onSubmitSuccess }: { id?: number | undefined; setId: (value: number | undefined) => void; onSubmitSuccess?: () => void }) {
   const [file, setFile] = useState<File | null>(null)
@@ -29,6 +31,14 @@ export default function EditDish({ id, setId, onSubmitSuccess }: { id?: number |
       status: DishStatus.Unavailable
     }
   })
+  const updateDishMuation = useUpdateDishMutation()
+  const uploadImageMutaion = useUploadMediaMutation()
+
+  const { data } = useGetDish({
+    id: Number(id) as number,
+    enabled: Boolean(id)
+  })
+
   const image = form.watch('image')
   const name = form.watch('name')
   const previewAvatarFromFile = useMemo(() => {
@@ -37,21 +47,79 @@ export default function EditDish({ id, setId, onSubmitSuccess }: { id?: number |
     }
     return image
   }, [file, image])
+
+  useEffect(() => {
+    if (data) {
+      const { name, price, description, status, image } = data.payload.data
+      form.reset({
+        name,
+        image: image ?? undefined,
+        price,
+        description,
+        status
+      })
+    }
+  }, [data, form])
+
+  const reset = () => {
+    setId(undefined)
+    setFile(null)
+  }
+
+  const onSubmit = async (values: UpdateDishBodyType) => {
+    if (updateDishMuation.isPending) return
+    try {
+      let body: UpdateDishBodyType & { id: number } = {
+        id: id as number,
+        ...values
+      }
+      if (file) {
+        const formData = new FormData()
+        formData.append('file', file)
+        const uploadImageResult = await uploadImageMutaion.mutateAsync(formData)
+        const imageUrl = uploadImageResult.payload.data
+        body = {
+          ...body,
+          image: imageUrl
+        }
+      }
+      const result = await updateDishMuation.mutateAsync(body)
+      toast({
+        title: 'Thành Công 😊😊😊',
+        description: result.payload.message,
+        variant: 'default',
+        duration: 4000
+      })
+      reset()
+      onSubmitSuccess && onSubmitSuccess()
+    } catch (error: any) {
+      handleErrorApi({
+        error,
+        setError: form.setError
+      })
+    }
+  }
   return (
     <Dialog
       open={Boolean(id)}
       onOpenChange={(value) => {
         if (!value) {
-          setId(undefined)
+          reset()
         }
       }}>
       <DialogContent className="sm:max-w-[600px] max-h-screen overflow-auto">
         <DialogHeader>
           <DialogTitle>Cập nhật món ăn</DialogTitle>
-          <DialogDescription>Các trường sau đây là bắ buộc: Tên, ảnh</DialogDescription>
+          <DialogDescription>Các trường sau đây là bắt buộc: Tên, ảnh</DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form noValidate className="grid auto-rows-max items-start gap-4 md:gap-8" id="edit-dish-form">
+          <form
+            noValidate
+            className="grid auto-rows-max items-start gap-4 md:gap-8"
+            id="edit-dish-form"
+            onSubmit={form.handleSubmit(onSubmit, (e) => {
+              console.log(e)
+            })}>
             <div className="grid gap-4 py-4">
               <FormField
                 control={form.control}
@@ -138,7 +206,7 @@ export default function EditDish({ id, setId, onSubmitSuccess }: { id?: number |
                     <div className="grid grid-cols-4 items-center justify-items-start gap-4">
                       <Label htmlFor="description">Trạng thái</Label>
                       <div className="col-span-3 w-full space-y-2">
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Chọn trạng thái" />
