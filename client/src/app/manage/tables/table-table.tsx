@@ -15,33 +15,19 @@ import {
 } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
 
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger
-} from '@/components/ui/dropdown-menu'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { createContext, useContext, useEffect, useState } from 'react'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle
-} from '@/components/ui/alert-dialog'
-import { getVietnameseTableStatus } from '@/lib/utils'
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
+import { getTableLink, getVietnameseTableStatus } from '@/lib/utils'
 import { useSearchParams } from 'next/navigation'
 import AutoPagination from '@/components/auto-pagination'
 import { TableListResType } from '@/schemaValidations/table.schema'
 import EditTable from '@/app/manage/tables/edit-table'
 import AddTable from '@/app/manage/tables/add-table'
+import { useTableList } from '@/queries/useTable'
+import QRCodeTable from '@/components/qrcode-table'
 
 type TableItem = TableListResType['data'][0]
 
@@ -61,12 +47,12 @@ export const columns: ColumnDef<TableItem>[] = [
   {
     accessorKey: 'number',
     header: 'Số bàn',
-    cell: ({ row }) => <div className='capitalize'>{row.getValue('number')}</div>
+    cell: ({ row }) => <div className="capitalize">{row.getValue('number')}</div>
   },
   {
     accessorKey: 'capacity',
     header: 'Sức chứa',
-    cell: ({ row }) => <div className='capitalize'>{row.getValue('capacity')}</div>
+    cell: ({ row }) => <div className="capitalize">{row.getValue('capacity')}</div>
   },
   {
     accessorKey: 'status',
@@ -76,7 +62,11 @@ export const columns: ColumnDef<TableItem>[] = [
   {
     accessorKey: 'token',
     header: 'QR Code',
-    cell: ({ row }) => <div>{row.getValue('number')}</div>
+    cell: ({ row }) => (
+      <>
+        <QRCodeTable token={row.getValue('token')} tableNumber={row.getValue('number')} />
+      </>
+    )
   },
   {
     id: 'actions',
@@ -93,12 +83,12 @@ export const columns: ColumnDef<TableItem>[] = [
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant='ghost' className='h-8 w-8 p-0'>
-              <span className='sr-only'>Open menu</span>
-              <DotsHorizontalIcon className='h-4 w-4' />
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <span className="sr-only">Open menu</span>
+              <DotsHorizontalIcon className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align='end'>
+          <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={openEditTable}>Sửa</DropdownMenuItem>
@@ -110,13 +100,7 @@ export const columns: ColumnDef<TableItem>[] = [
   }
 ]
 
-function AlertDialogDeleteTable({
-  tableDelete,
-  setTableDelete
-}: {
-  tableDelete: TableItem | null
-  setTableDelete: (value: TableItem | null) => void
-}) {
+function AlertDialogDeleteTable({ tableDelete, setTableDelete }: { tableDelete: TableItem | null; setTableDelete: (value: TableItem | null) => void }) {
   return (
     <AlertDialog
       open={Boolean(tableDelete)}
@@ -124,14 +108,12 @@ function AlertDialogDeleteTable({
         if (!value) {
           setTableDelete(null)
         }
-      }}
-    >
+      }}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Xóa bàn ăn?</AlertDialogTitle>
           <AlertDialogDescription>
-            Bàn <span className='bg-foreground text-primary-foreground rounded px-1'>{tableDelete?.number}</span> sẽ bị
-            xóa vĩnh viễn
+            Bàn <span className="bg-foreground text-primary-foreground rounded px-1">{tableDelete?.number}</span> sẽ bị xóa vĩnh viễn
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
@@ -151,7 +133,8 @@ export default function TableTable() {
   // const params = Object.fromEntries(searchParam.entries())
   const [tableIdEdit, setTableIdEdit] = useState<number | undefined>()
   const [tableDelete, setTableDelete] = useState<TableItem | null>(null)
-  const data: any[] = []
+  const tableListQuery = useTableList()
+  const data = tableListQuery.data?.payload.data ?? []
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
@@ -192,31 +175,27 @@ export default function TableTable() {
 
   return (
     <TableTableContext.Provider value={{ tableIdEdit, setTableIdEdit, tableDelete, setTableDelete }}>
-      <div className='w-full'>
+      <div className="w-full">
         <EditTable id={tableIdEdit} setId={setTableIdEdit} />
         <AlertDialogDeleteTable tableDelete={tableDelete} setTableDelete={setTableDelete} />
-        <div className='flex items-center py-4'>
+        <div className="flex items-center py-4">
           <Input
-            placeholder='Lọc số bàn'
+            placeholder="Lọc số bàn"
             value={(table.getColumn('number')?.getFilterValue() as string) ?? ''}
             onChange={(event) => table.getColumn('number')?.setFilterValue(event.target.value)}
-            className='max-w-sm'
+            className="max-w-sm"
           />
-          <div className='ml-auto flex items-center gap-2'>
+          <div className="ml-auto flex items-center gap-2">
             <AddTable />
           </div>
         </div>
-        <div className='rounded-md border'>
+        <div className="rounded-md border">
           <Table>
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>
                   {headerGroup.headers.map((header) => {
-                    return (
-                      <TableHead key={header.id}>
-                        {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                      </TableHead>
-                    )
+                    return <TableHead key={header.id}>{header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}</TableHead>
                   })}
                 </TableRow>
               ))}
@@ -232,7 +211,7 @@ export default function TableTable() {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={columns.length} className='h-24 text-center'>
+                  <TableCell colSpan={columns.length} className="h-24 text-center">
                     No results.
                   </TableCell>
                 </TableRow>
@@ -240,17 +219,12 @@ export default function TableTable() {
             </TableBody>
           </Table>
         </div>
-        <div className='flex items-center justify-end space-x-2 py-4'>
-          <div className='text-xs text-muted-foreground py-4 flex-1 '>
-            Hiển thị <strong>{table.getPaginationRowModel().rows.length}</strong> trong <strong>{data.length}</strong>{' '}
-            kết quả
+        <div className="flex items-center justify-end space-x-2 py-4">
+          <div className="text-xs text-muted-foreground py-4 flex-1 ">
+            Hiển thị <strong>{table.getPaginationRowModel().rows.length}</strong> trong <strong>{data.length}</strong> kết quả
           </div>
           <div>
-            <AutoPagination
-              page={table.getState().pagination.pageIndex + 1}
-              pageSize={table.getPageCount()}
-              pathname='/manage/tables'
-            />
+            <AutoPagination page={table.getState().pagination.pageIndex + 1} pageSize={table.getPageCount()} pathname="/manage/tables" />
           </div>
         </div>
       </div>
