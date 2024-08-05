@@ -8,13 +8,16 @@ import { PlusCircle } from 'lucide-react'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form'
-import { getVietnameseTableStatus } from '@/lib/utils'
+import { getVietnameseTableStatus, handleErrorApi } from '@/lib/utils'
 import { CreateTableBody, CreateTableBodyType } from '@/schemaValidations/table.schema'
 import { TableStatus, TableStatusValues } from '@/constants/type'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { useCreateTableMutation } from '@/queries/useTable'
+import { toast } from '@/components/ui/use-toast'
 
 export default function AddTable() {
   const [open, setOpen] = useState(false)
+  const createTableMutation = useCreateTableMutation()
   const form = useForm<CreateTableBodyType>({
     resolver: zodResolver(CreateTableBody),
     defaultValues: {
@@ -23,30 +26,61 @@ export default function AddTable() {
       status: TableStatus.Hidden
     }
   })
+
+  const reset = () => {
+    form.reset()
+  }
+
+  const onSubmit = async (values: CreateTableBodyType) => {
+    if (createTableMutation.isPending) return
+    try {
+      const result = await createTableMutation.mutateAsync(values)
+      toast({
+        title: 'Thành Công 😊😊😊',
+        description: result.payload.message,
+        variant: 'default',
+        duration: 4000
+      })
+      reset()
+      setOpen(false)
+    } catch (error: any) {
+      handleErrorApi({
+        error,
+        setError: form.setError
+      })
+    }
+  }
   return (
     <Dialog onOpenChange={setOpen} open={open}>
       <DialogTrigger asChild>
-        <Button size='sm' className='h-7 gap-1'>
-          <PlusCircle className='h-3.5 w-3.5' />
-          <span className='sr-only sm:not-sr-only sm:whitespace-nowrap'>Thêm bàn</span>
+        <Button size="sm" className="h-7 gap-1">
+          <PlusCircle className="h-3.5 w-3.5" />
+          <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">Thêm bàn</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className='sm:max-w-[600px] max-h-screen overflow-auto' onCloseAutoFocus={() => form.reset()}>
+      <DialogContent className="sm:max-w-[600px] max-h-screen overflow-auto" onCloseAutoFocus={() => form.reset()}>
         <DialogHeader>
           <DialogTitle>Thêm bàn</DialogTitle>
         </DialogHeader>
         <Form {...form}>
-          <form noValidate className='grid auto-rows-max items-start gap-4 md:gap-8' id='add-table-form'>
-            <div className='grid gap-4 py-4'>
+          <form
+            noValidate
+            className="grid auto-rows-max items-start gap-4 md:gap-8"
+            id="add-table-form"
+            onSubmit={form.handleSubmit(onSubmit, (e) => {
+              console.log(e)
+            })}
+            onReset={reset}>
+            <div className="grid gap-4 py-4">
               <FormField
                 control={form.control}
-                name='number'
+                name="number"
                 render={({ field }) => (
                   <FormItem>
-                    <div className='grid grid-cols-4 items-center justify-items-start gap-4'>
-                      <Label htmlFor='name'>Số hiệu bàn</Label>
-                      <div className='col-span-3 w-full space-y-2'>
-                        <Input id='number' type='number' className='w-full' {...field} />
+                    <div className="grid grid-cols-4 items-center justify-items-start gap-4">
+                      <Label htmlFor="name">Số hiệu bàn</Label>
+                      <div className="col-span-3 w-full space-y-2">
+                        <Input id="number" type="number" className="w-full" {...field} />
                         <FormMessage />
                       </div>
                     </div>
@@ -55,13 +89,13 @@ export default function AddTable() {
               />
               <FormField
                 control={form.control}
-                name='capacity'
+                name="capacity"
                 render={({ field }) => (
                   <FormItem>
-                    <div className='grid grid-cols-4 items-center justify-items-start gap-4'>
-                      <Label htmlFor='price'>Lượng khách cho phép</Label>
-                      <div className='col-span-3 w-full space-y-2'>
-                        <Input id='capacity' className='w-full' {...field} type='number' />
+                    <div className="grid grid-cols-4 items-center justify-items-start gap-4">
+                      <Label htmlFor="price">Lượng khách cho phép</Label>
+                      <div className="col-span-3 w-full space-y-2">
+                        <Input id="capacity" className="w-full" {...field} type="number" />
                         <FormMessage />
                       </div>
                     </div>
@@ -70,16 +104,16 @@ export default function AddTable() {
               />
               <FormField
                 control={form.control}
-                name='status'
+                name="status"
                 render={({ field }) => (
                   <FormItem>
-                    <div className='grid grid-cols-4 items-center justify-items-start gap-4'>
-                      <Label htmlFor='description'>Trạng thái</Label>
-                      <div className='col-span-3 w-full space-y-2'>
+                    <div className="grid grid-cols-4 items-center justify-items-start gap-4">
+                      <Label htmlFor="description">Trạng thái</Label>
+                      <div className="col-span-3 w-full space-y-2">
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder='Chọn trạng thái' />
+                              <SelectValue placeholder="Chọn trạng thái" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
@@ -101,7 +135,7 @@ export default function AddTable() {
           </form>
         </Form>
         <DialogFooter>
-          <Button type='submit' form='add-table-form'>
+          <Button type="submit" form="add-table-form">
             Thêm
           </Button>
         </DialogFooter>
