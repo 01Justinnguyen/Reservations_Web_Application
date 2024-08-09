@@ -16,7 +16,7 @@ import { UpdateDishBody, UpdateDishBodyType } from '@/schemaValidations/dish.sch
 import { DishStatus, DishStatusValues } from '@/constants/type'
 import { Textarea } from '@/components/ui/textarea'
 import { useUploadMediaMutation } from '@/queries/useMedia'
-import { useGetDish, useUpdateDishMutation } from '@/queries/useDish'
+import { useGetDishQuery, useUpdateDishMutation } from '@/queries/useDish'
 
 export default function EditDish({ id, setId, onSubmitSuccess }: { id?: number | undefined; setId: (value: number | undefined) => void; onSubmitSuccess?: () => void }) {
   const [file, setFile] = useState<File | null>(null)
@@ -27,14 +27,14 @@ export default function EditDish({ id, setId, onSubmitSuccess }: { id?: number |
       name: '',
       description: '',
       price: 0,
-      image: '',
+      image: undefined,
       status: DishStatus.Unavailable
     }
   })
   const updateDishMuation = useUpdateDishMutation()
   const uploadImageMutaion = useUploadMediaMutation()
 
-  const { data } = useGetDish({
+  const { data, refetch } = useGetDishQuery({
     id: Number(id) as number,
     enabled: Boolean(id)
   })
@@ -90,7 +90,7 @@ export default function EditDish({ id, setId, onSubmitSuccess }: { id?: number |
         variant: 'default',
         duration: 4000
       })
-      reset()
+      refetch()
       onSubmitSuccess && onSubmitSuccess()
     } catch (error: any) {
       handleErrorApi({
@@ -107,7 +107,7 @@ export default function EditDish({ id, setId, onSubmitSuccess }: { id?: number |
           reset()
         }
       }}>
-      <DialogContent className="sm:max-w-[600px] max-h-screen overflow-auto">
+      <DialogContent aria-describedby="undefined" className="sm:max-w-[600px] max-h-screen overflow-auto">
         <DialogHeader>
           <DialogTitle>Cập nhật món ăn</DialogTitle>
           <DialogDescription>Các trường sau đây là bắt buộc: Tên, ảnh</DialogDescription>

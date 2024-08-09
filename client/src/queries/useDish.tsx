@@ -9,7 +9,7 @@ export const useDishList = () => {
   })
 }
 
-export const useGetDish = ({ id, enabled }: { id: number; enabled?: boolean }) => {
+export const useGetDishQuery = ({ id, enabled }: { id: number; enabled?: boolean }) => {
   return useQuery({
     queryKey: ['dishes', id],
     queryFn: () => dishApiRequest.getDish(id),
