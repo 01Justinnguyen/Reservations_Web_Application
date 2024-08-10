@@ -133,7 +133,7 @@ export default function EditTable({ id, setId, onSubmitSuccess }: { id?: number 
                     <div className="grid grid-cols-4 items-center justify-items-start gap-4">
                       <Label htmlFor="description">Trạng thái</Label>
                       <div className="col-span-3 w-full space-y-2">
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Chọn trạng thái" />
@@ -141,7 +141,7 @@ export default function EditTable({ id, setId, onSubmitSuccess }: { id?: number 
                           </FormControl>
                           <SelectContent>
                             {TableStatusValues.map((status) => (
-                              <SelectItem key={status} value={status} defaultValue={data?.payload.data.status!}>
+                              <SelectItem key={status} value={status} defaultValue={status}>
                                 {getVietnameseTableStatus(status)}
                               </SelectItem>
                             ))}
