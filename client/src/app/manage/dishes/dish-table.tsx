@@ -1,6 +1,6 @@
 'use client'
 
-import { DotsHorizontalIcon } from '@radix-ui/react-icons'
+import { CaretSortIcon, DotsHorizontalIcon } from '@radix-ui/react-icons'
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -47,7 +47,14 @@ const DishTableContext = createContext<{
 export const columns: ColumnDef<DishItem>[] = [
   {
     accessorKey: 'id',
-    header: 'ID'
+    header: ({ column }) => {
+      return (
+        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
+          ID
+          <CaretSortIcon className="ml-2 h-4 w-4" />
+        </Button>
+      )
+    }
   },
   {
     accessorKey: 'image',

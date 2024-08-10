@@ -1,6 +1,6 @@
 'use client'
 
-import { DotsHorizontalIcon } from '@radix-ui/react-icons'
+import { CaretSortIcon, DotsHorizontalIcon } from '@radix-ui/react-icons'
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -47,7 +47,14 @@ const TableTableContext = createContext<{
 export const columns: ColumnDef<TableItem>[] = [
   {
     accessorKey: 'number',
-    header: 'Số bàn',
+    header: ({ column }) => {
+      return (
+        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
+          Số bàn
+          <CaretSortIcon className="ml-2 h-4 w-4" />
+        </Button>
+      )
+    },
     cell: ({ row }) => <div className="capitalize">{row.getValue('number')}</div>,
     filterFn: (rows, columnId, filterValue) => {
       if (!filterValue) return true
