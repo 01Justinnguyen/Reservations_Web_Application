@@ -20,14 +20,15 @@ import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { createContext, useContext, useEffect, useState } from 'react'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
-import { getTableLink, getVietnameseTableStatus } from '@/lib/utils'
+import { getTableLink, getVietnameseTableStatus, handleErrorApi } from '@/lib/utils'
 import { useSearchParams } from 'next/navigation'
 import AutoPagination from '@/components/auto-pagination'
 import { TableListResType } from '@/schemaValidations/table.schema'
 import EditTable from '@/app/manage/tables/edit-table'
 import AddTable from '@/app/manage/tables/add-table'
-import { useTableList } from '@/queries/useTable'
+import { useDeleteTableMutation, useTableList } from '@/queries/useTable'
 import QRCodeTable from '@/components/qrcode-table'
+import { toast } from '@/components/ui/use-toast'
 
 type TableItem = TableListResType['data'][0]
 
@@ -47,7 +48,11 @@ export const columns: ColumnDef<TableItem>[] = [
   {
     accessorKey: 'number',
     header: 'Số bàn',
-    cell: ({ row }) => <div className="capitalize">{row.getValue('number')}</div>
+    cell: ({ row }) => <div className="capitalize">{row.getValue('number')}</div>,
+    filterFn: (rows, columnId, filterValue) => {
+      if (!filterValue) return true
+      return String(filterValue) === String(rows.getValue('number'))
+    }
   },
   {
     accessorKey: 'capacity',
@@ -101,6 +106,25 @@ export const columns: ColumnDef<TableItem>[] = [
 ]
 
 function AlertDialogDeleteTable({ tableDelete, setTableDelete }: { tableDelete: TableItem | null; setTableDelete: (value: TableItem | null) => void }) {
+  const deleteTableMutation = useDeleteTableMutation()
+  const deleteDish = async () => {
+    if (tableDelete) {
+      try {
+        const result = await deleteTableMutation.mutateAsync(tableDelete.number)
+        setTableDelete(null)
+        toast({
+          title: 'Thành Công 😊😊😊',
+          description: result.payload.message,
+          variant: 'default',
+          duration: 4000
+        })
+      } catch (error) {
+        handleErrorApi({
+          error
+        })
+      }
+    }
+  }
   return (
     <AlertDialog
       open={Boolean(tableDelete)}
@@ -118,7 +142,7 @@ function AlertDialogDeleteTable({ tableDelete, setTableDelete }: { tableDelete: 
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction>Continue</AlertDialogAction>
+          <AlertDialogAction onClick={deleteDish}>Continue</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
