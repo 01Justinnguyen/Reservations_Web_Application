@@ -17,6 +17,7 @@ import { DishStatus, DishStatusValues } from '@/constants/type'
 import { Textarea } from '@/components/ui/textarea'
 import { useUploadMediaMutation } from '@/queries/useMedia'
 import { useGetDishQuery, useUpdateDishMutation } from '@/queries/useDish'
+import revalidateApiRequest from '@/apiRequests/revalidate'
 
 export default function EditDish({ id, setId, onSubmitSuccess }: { id?: number | undefined; setId: (value: number | undefined) => void; onSubmitSuccess?: () => void }) {
   const [file, setFile] = useState<File | null>(null)
@@ -84,6 +85,7 @@ export default function EditDish({ id, setId, onSubmitSuccess }: { id?: number |
         }
       }
       const result = await updateDishMuation.mutateAsync(body)
+      await revalidateApiRequest('dishes')
       toast({
         title: 'Thành Công 😊😊😊',
         description: result.payload.message,
