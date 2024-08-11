@@ -12,7 +12,6 @@ export default async function Home() {
   } catch (error) {
     return <div>Something went wrong</div>
   }
-  console.log('🐻 ~ Home ~ dishList:', dishList)
   return (
     <div className="w-full space-y-4">
       <section className="relative z-10">
