@@ -27,16 +27,12 @@ export const GuestLoginRes = z.object({
 
 export type GuestLoginResType = z.TypeOf<typeof GuestLoginRes>
 
-export const GuestCreateOrdersBody = z
-  .object({
-    orders: z.array(
-      z.object({
-        dishId: z.number(),
-        quantity: z.number()
-      })
-    )
+export const GuestCreateOrdersBody = z.array(
+  z.object({
+    dishId: z.number(),
+    quantity: z.number()
   })
-  .strict()
+)
 
 export type GuestCreateOrdersBodyType = z.TypeOf<typeof GuestCreateOrdersBody>
 const DishSnapshotSchema = z.object({
@@ -73,6 +69,7 @@ export const GuestCreateOrdersRes = z.object({
   )
 })
 
-export type GuestCreateOrdersResType = z.TypeOf<typeof GuestCreateOrdersRes>
+export const GuestGetOrdersRes = GuestCreateOrdersRes
 
-export const GuestGetOrdersRes = z.object({})
+export type GuestCreateOrdersResType = z.TypeOf<typeof GuestCreateOrdersRes>
+export type GuestGetOrdersResType = z.TypeOf<typeof GuestGetOrdersRes>
