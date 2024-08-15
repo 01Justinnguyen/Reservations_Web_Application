@@ -13,7 +13,7 @@ import { useAppContext } from '@/components/app-provider'
 export default function DropdownAvatar() {
   const router = useRouter()
   const logoutMutatation = useLogoutMutation()
-  const { setIsAuth } = useAppContext()
+  const { setRole } = useAppContext()
   const { data } = useAccountMe()
   const account = data?.payload.data
 
@@ -21,7 +21,7 @@ export default function DropdownAvatar() {
     if (logoutMutatation.isPending) return
     try {
       const result = await logoutMutatation.mutateAsync()
-      setIsAuth(false)
+      setRole()
       router.push('/')
       toast({
         title: 'Okela',
